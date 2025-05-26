@@ -23,4 +23,11 @@ class UserDetails extends Authenticatable
         'gender',
         'password'
     ];
+
+
+    protected $hidden = [
+        'password',
+        'created_at',
+        'updated_at'
+    ];
 }

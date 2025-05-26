@@ -38,13 +38,14 @@ Route::prefix('auth')->group(function () {
 });
 
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/patient/profile', [PatientController::class, 'getProfile']);
-    Route::put('/patient/profile', [PatientController::class, 'updateProfile']);
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/patient/profile', [PatientController::class, 'profile']);
 
-    Route::get('/patient/appointments', [PatientController::class, 'appointments']);
+    Route::get('/appointments', [PatientController::class, 'indexAppointments']);
+    Route::post('/appointments', [PatientController::class, 'storeAppointment']);
+    Route::put('/appointments/{appointment}', [PatientController::class, 'updateAppointment']);
+    Route::delete('/appointments/{appointment}', [PatientController::class, 'deleteAppointment']);
 
-    Route::post('/patient/change-password', [PatientController::class, 'changePassword']);
-    Route::post('/patient/send-code', [PatientController::class, 'sendCode']);
-    Route::post('/patient/verify-code', [PatientController::class, 'verifyCode']);
+    Route::post('/change-password', [PatientController::class, 'changePassword']);
 });
+

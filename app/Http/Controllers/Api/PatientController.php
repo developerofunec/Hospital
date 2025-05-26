@@ -1,86 +1,85 @@
 <?php
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
-use App\Models\UserDetails;
+use App\Http\Requests\AppointmentRequest;
+use App\Http\Requests\ChangePasswordRequest;
 use App\Models\Appointment;
-use App\Models\VerificationCode;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\VerificationCodeMail;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Request;
 
 class PatientController extends Controller
 {
-    public function getProfile()
+    public function profile()
     {
-        return response()->json(['user' => Auth::user()]);
-    }
-
-    public function updateProfile(Request $request)
-    {
-        $user = Auth::user();
-        $user->update($request->only('first_name', 'last_name', 'phone_number', 'address'));
-
-        return response()->json(['message' => 'Profile updated successfully']);
-    }
-
-    public function appointments()
-    {
-        $user = Auth::user();
-        $appointments = Appointment::where('user_id', $user->id)->get();
-
-        return response()->json(['appointments' => $appointments]);
-    }
-
-    public function changePassword(Request $request)
-    {
-        $request->validate([
-            'old_password' => 'required',
-            'new_password' => 'required|confirmed|min:6',
+        return response()->json([
+            'success' => true,
+            'data' => Auth::user()
         ]);
+    }
 
-        if (!Hash::check($request->old_password, Auth::user()->password)) {
-            return response()->json(['error' => 'Incorrect old password'], 403);
+    // Appointments
+    public function indexAppointments()
+    {
+        return response()->json([
+            'appointments' => Auth::user()->appointments
+        ]);
+    }
+
+    public function storeAppointment(AppointmentRequest $request)
+    {
+        $appointment = Auth::user()->appointments()->create($request->validated());
+
+        return response()->json([
+            'success' => true,
+            'data' => $appointment
+        ]);
+    }
+
+    public function updateAppointment(AppointmentRequest $request, Appointment $appointment)
+    {
+        if ($appointment->user_id !== Auth::id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        Auth::user()->update([
-            'password' => Hash::make($request->new_password)
+        $appointment->update($request->validated());
+
+        return response()->json([
+            'success' => true,
+            'data' => $appointment
         ]);
-
-        return response()->json(['message' => 'Password changed successfully']);
     }
 
-    public function sendCode()
+    public function deleteAppointment(Appointment $appointment)
     {
-        $code = rand(1000, 9999);
-        $user = Auth::user();
-
-        VerificationCode::updateOrCreate(
-            ['user_id' => $user->id],
-            ['code' => $code]
-        );
-
-        Mail::to($user->email)->send(new VerificationCodeMail($code));
-
-        return response()->json(['message' => 'Code sent']);
-    }
-
-    public function verifyCode(Request $request)
-    {
-        $request->validate(['code' => 'required']);
-
-        $check = VerificationCode::where('user_id', Auth::id())
-            ->where('code', $request->code)
-            ->first();
-
-        if (!$check) {
-            return response()->json(['error' => 'Invalid code'], 400);
+        if ($appointment->user_id !== Auth::id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        return response()->json(['message' => 'Code verified']);
+        $appointment->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Appointment deleted successfully.'
+        ]);
+    }
+
+    // Change password
+    public function changePassword(ChangePasswordRequest $request)
+    {
+        $user = Auth::user();
+
+        if (!Hash::check($request->old_password, $user->password)) {
+            return response()->json(['error' => 'Old password does not match'], 400);
+        }
+
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password changed successfully.'
+        ]);
     }
 }
-
