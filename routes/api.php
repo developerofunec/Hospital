@@ -40,12 +40,23 @@ Route::prefix('auth')->group(function () {
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/patient/profile', [PatientController::class, 'profile']);
-
-    Route::get('/appointments', [PatientController::class, 'indexAppointments']);
-    Route::post('/appointments', [PatientController::class, 'storeAppointment']);
-    Route::put('/appointments/{appointment}', [PatientController::class, 'updateAppointment']);
-    Route::delete('/appointments/{appointment}', [PatientController::class, 'deleteAppointment']);
-
+    Route::get('/appointments', [AppointmentController::class, 'index']);
+    Route::post('/appointments', [AppointmentController::class, 'store']);
+    Route::put('/appointments/{appointment}', [AppointmentController::class, 'update']);
+    Route::delete('/appointments/{appointment}', [AppointmentController::class, 'destroy']);
     Route::post('/change-password', [PatientController::class, 'changePassword']);
+    
+    Route::post('/profile/image', [UserDetailController::class, 'updateProfileImage']);
+    Route::delete('/profile/image', [UserDetailController::class, 'deleteProfileImage']);
+    Route::apiResource('/medical-records', MedicalRecordController::class);
 });
+
+
+
+
+
+
+
+
+
 
