@@ -39,4 +39,17 @@ return new class extends Migration
     {
         Schema::dropIfExists('user_details');
     }
+
+
+public function image(){
+    Schema::create('userdetails', function (Blueprint $table) {
+    $table->id();
+    $table->unsignedBigInteger('user_id')->unique();
+    $table->string('profile_image')->nullable(); // şəkil yolu
+    $table->timestamps();
+
+    $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+});
+
+}
 };
