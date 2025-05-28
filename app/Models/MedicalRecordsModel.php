@@ -5,18 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-// app/Models/Appointment.php
-class Appointment extends Model
+class MedicalRecordsModel extends Model
 {
+
     protected $fillable = [
-        'patient_id', 
-        'doctor_id',
-        'name', 
-        'surname',
-        'birthdate', 
-        'date',
-        'time',
-        'status'
+        'doctor_id', 'patient_id',
+        'diagnose', 'diagnose_date', 'prescription', 'documents',
+        'plan_title', 'description', 'start_date', 'end_date',
+        'procedures', 'follow_up', 'status'
     ];
 
     public function doctor()
@@ -28,5 +24,6 @@ class Appointment extends Model
     {
         return $this->belongsTo(User::class, 'patient_id');
     }
-}
 
+
+}
